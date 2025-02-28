@@ -15,7 +15,6 @@ class PopupManager {
     await this.loadSettings();
     this.setupEventListeners();
     await this.getCurrentState();
-    // Automatically copy context when popup opens
     this.autoCopyContext();
   }
 
@@ -71,7 +70,7 @@ class PopupManager {
   setupEventListeners() {
     console.log('Setting up event listeners');
     
-    // Listen for context updates from background script
+   
     chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (message.type === 'SHOW_NOTIFICATION') {
         this.showCopyStatus(message.message);
@@ -80,7 +79,7 @@ class PopupManager {
       }
     });
 
-    // Manual copy button handler
+   
     const copyBtn = document.getElementById('copyBtn');
     if (copyBtn) {
       copyBtn.addEventListener('click', async () => {
@@ -108,20 +107,20 @@ class PopupManager {
       });
     }
 
-    // Auto-switch toggle
+ 
     const autoSwitchToggle = document.getElementById('autoSwitchToggle');
     if (autoSwitchToggle) {
       autoSwitchToggle.checked = this.autoSwitchEnabled;
       autoSwitchToggle.addEventListener('change', () => {
         this.autoSwitchEnabled = autoSwitchToggle.checked;
         if (this.autoSwitchEnabled) {
-          this.autoCopyContext(); // Auto copy when enabling
+          this.autoCopyContext();
         }
         this.updateUI();
       });
     }
 
-    // Paste button (for manual injection)
+   
     const pasteBtn = document.getElementById('pasteBtn');
     if (pasteBtn) {
       pasteBtn.addEventListener('click', () => {
@@ -134,7 +133,7 @@ class PopupManager {
       });
     }
 
-    // Summary toggle
+    
     const summaryToggle = document.getElementById('summaryToggle');
     if (summaryToggle) {
       summaryToggle.checked = this.summaryEnabled;
@@ -142,18 +141,18 @@ class PopupManager {
         this.summaryEnabled = summaryToggle.checked;
         chrome.storage.local.set({ summaryEnabled: this.summaryEnabled });
         this.updateSummaryStatus();
-        this.getCurrentState(); // Refresh context with new setting
+        this.getCurrentState(); 
       });
     }
 
-    // Min length input
+    
     const minLengthInput = document.getElementById('minLength');
     if (minLengthInput) {
       minLengthInput.value = this.minLength;
       minLengthInput.addEventListener('change', () => {
         this.minLength = parseInt(minLengthInput.value);
         chrome.storage.local.set({ minLength: this.minLength });
-        this.getCurrentState(); // Refresh context with new setting
+        this.getCurrentState(); 
       });
     }
   }
@@ -163,7 +162,7 @@ class PopupManager {
     if (data && data.llmType) {
       this.currentLLM = data.llmType;
       this.currentContext = data.content || '';
-      // Auto copy when context updates
+   
       this.autoCopyContext();
       this.updateUI();
     }
@@ -174,7 +173,7 @@ class PopupManager {
     if (statusElement) {
       statusElement.textContent = message;
       statusElement.classList.remove('status-active');
-      // Trigger reflow
+    
       void statusElement.offsetWidth;
       statusElement.classList.add('status-active');
     }
@@ -207,7 +206,7 @@ class PopupManager {
       contextElement.innerHTML = '<div class="no-context">No context available</div>';
     }
 
-    // Update auto-switch status
+    
     const statusElement = document.getElementById('switchStatus');
     if (statusElement) {
       statusElement.textContent = this.autoSwitchEnabled ? 
@@ -216,7 +215,7 @@ class PopupManager {
       statusElement.className = this.autoSwitchEnabled ? 'status-enabled' : 'status-disabled';
     }
 
-    // Show last copied time if available
+    
     const timeElement = document.getElementById('lastCopiedTime');
     if (timeElement && this.lastCopiedTime) {
       timeElement.textContent = `Last copied: ${this.lastCopiedTime.toLocaleTimeString()}`;
@@ -226,7 +225,7 @@ class PopupManager {
   }
 }
 
-// Create instance when document is loaded
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM Content Loaded - creating PopupManager');
   window.popupManager = new PopupManager();

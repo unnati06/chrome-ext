@@ -6,7 +6,7 @@
       },
       {
         "platform": "claude",
-        "selector": "div[role='textbox'], textarea[placeholder*='Message Claude']"
+        "selector": "div[role='textbox']"
       },
       {
         "platform": "gemini",
@@ -26,7 +26,7 @@
       },
       {
         "platform": "deepseek",
-        "selector": "textarea.prompt-textarea, div[contenteditable='true']"
+        "selector": "textarea#chat-input, textarea.prompt-textarea"
       }
     ],
     "outputs": [
@@ -56,7 +56,7 @@
       },
       {
         "platform": "deepseek",
-        "selector": "div.message-content div.message-text, div.message-content div.user-message, div.chat-message div.content"
+        "selector": ".message-content .message-text, .chat-message .content, .message-bubble .content, .chat-message-item"
       }
     ]
   }

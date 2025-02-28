@@ -9,46 +9,44 @@ class LLMMonitor {
         };
         this.initialized = false;
         this.lastContext = '';
-        console.log('LLMMonitor: Creating summarizer instance');
+        console.log('LLMMonitor: creating summarizer instance');
         this.summarizer = new Summarizer();
+        this.observedElements = new WeakMap();
+        this.debounceTimers = new WeakMap();
         this.setupAutoContextSwitching();
         this.init();
+        this.summaryEnabled = true;
+        this.minLength = 1000;
     }
 
     setupAutoContextSwitching() {
-        // Listen for tab change events
         chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             if (message.type === 'TAB_CHANGED') {
                 this.handleTabChange();
             }
             return true;
         });
-
-        // Watch for DOM changes that might indicate context changes
         this.observeDOM();
     }
 
     observeDOM() {
         const observer = new MutationObserver((mutations) => {
-            // Debounce the context check to avoid too frequent updates
             if (this.observerTimeout) {
                 clearTimeout(this.observerTimeout);
             }
             
             this.observerTimeout = setTimeout(() => {
                 this.checkForContextChanges();
-            }, 1000); // Wait 1 second after last mutation
+            }, 1000);
         });
 
-        // Start observing the chat container
         const config = { 
             childList: true, 
             subtree: true, 
             characterData: true 
         };
         
-        // Observe the main chat container
-        const chatContainer = document.body; // Or a more specific selector
+        const chatContainer = document.body;
         observer.observe(chatContainer, config);
     }
 
@@ -64,18 +62,14 @@ class LLMMonitor {
     async handleTabChange() {
         console.log('Handling tab change');
         try {
-            // Wait for DOM to be ready
             await this.waitForChat();
             
-            // Get current context
+        
             const context = this.getCurrentContext();
             if (context) {
-                // Copy to clipboard automatically
                 try {
                     await navigator.clipboard.writeText(context);
                     console.log('Context copied to clipboard automatically');
-                    
-                    // Notify user (optional - you can add a small notification)
                     chrome.runtime.sendMessage({
                         type: 'SHOW_NOTIFICATION',
                         message: 'Context copied to clipboard'
@@ -90,7 +84,7 @@ class LLMMonitor {
     }
 
     async waitForChat() {
-        // Wait for chat interface to be ready
+       
         return new Promise((resolve) => {
             const checkDOM = () => {
                 const llmType = this.detectLLM();
@@ -122,12 +116,11 @@ class LLMMonitor {
                 return;
             }
 
-            // Simulate typing or set value based on input type
+         
             if (inputElement.tagName === 'TEXTAREA' || inputElement.tagName === 'INPUT') {
                 inputElement.value = context;
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
             } else {
-                // For contenteditable divs
                 inputElement.textContent = context;
                 inputElement.dispatchEvent(new Event('input', { bubbles: true }));
             }
@@ -159,7 +152,7 @@ class LLMMonitor {
                 sendResponse(state);
                 return true;
             }
-            return true; // Keep channel open for async response
+            return true; 
         });
     }
 
@@ -183,20 +176,19 @@ class LLMMonitor {
     }
 
     getElementPriority(element) {
-        // Helper function to determine element priority based on its characteristics
+        
         try {
             if (!element) return 0;
-            
-            // Priority scoring system
+        
             let score = 0;
             
-            // Check for common message indicators
+            
             if (element.classList.contains('message-content')) score += 5;
             if (element.classList.contains('user-message')) score += 3;
             if (element.classList.contains('ai-message')) score += 3;
             if (element.getAttribute('data-message-author-role')) score += 4;
             
-            // Check for visibility
+            
             const style = window.getComputedStyle(element);
             if (style.display === 'none' || style.visibility === 'hidden') {
                 score -= 10;
@@ -267,7 +259,7 @@ class LLMMonitor {
                 { platform: "grok", selector: "textarea[placeholder*='Type your message']" },
                 { platform: "kimi", selector: "textarea.chat-input" },
                 { platform: "qwen", selector: "textarea.prompt-textarea" },
-                { platform: "deepseek", selector: "textarea.prompt-textarea" }
+                { platform: "deepseek", selector: "textarea#chat-input" }
             ],
             outputSelectors: [
                 { platform: "chatgpt", selector: "div[data-message-author-role='assistant'], div[data-message-author-role='user']" },
@@ -281,7 +273,7 @@ class LLMMonitor {
         };
         console.log('Fallback selectors loaded:', this.config);
 
-        // Debug logging for Deepseek
+        // console for deepseek
         if (window.location.hostname.includes('deepseek')) {
             console.log('On Deepseek, searching for elements...');
             const elements = document.querySelectorAll('.message-content .message-text, .message-content .user-message');
@@ -311,7 +303,7 @@ class LLMMonitor {
                 }
             };
 
-            // Send message to background script
+            // sending to bg.js
             chrome.runtime.sendMessage(message, response => {
                 if (chrome.runtime.lastError) {
                     console.log('Send update error:', chrome.runtime.lastError.message);
@@ -326,7 +318,7 @@ class LLMMonitor {
 
     async loadDynamicSelectors() {
         try {
-            // Skip dynamic loading and use fallback selectors directly
+
             this.loadFallbackSelectors();
             return;
         } catch (error) {
@@ -397,7 +389,7 @@ class LLMMonitor {
     }
   
     getOutputContent(element) {
-      // Advanced content extraction with error boundaries
+     
       try {
         const clone = element.cloneNode(true);
         clone.querySelectorAll('.hidden, script, style').forEach(n => n.remove());
@@ -436,26 +428,24 @@ class LLMMonitor {
       this.startMonitoring();
     }
   
-    encryptContent(text) {
-      // Implement crypto-js AES encryption
-      return text; // Placeholder
-    }
+    // encryptContent(text) {
+    //   return text; 
+    // }
   
-    queueRetry(payload) {
-      // Implement exponential backoff retry logic
-    }
+    // queueRetry(payload) {
+    
+    // } optional, see later
 }
   
-// Create and initialize monitor immediately when script loads
+
 console.log('Content script loading...');
 const monitor = new LLMMonitor();
 
-// Initialize after a short delay to ensure DOM is ready
 setTimeout(() => {
     console.log('Initializing monitor...');
     monitor.init().catch(error => {
         console.error('Monitor initialization failed:', error);
     });
 }, 100);
-// Export for debugging
+
 window.llmMonitor = monitor;

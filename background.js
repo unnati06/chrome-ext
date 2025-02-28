@@ -20,7 +20,7 @@ class BackgroundManager {
       chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (msg.type === 'CONTEXT_UPDATE') {
           this.handleContextUpdate(msg.data);
-          // Forward the message to popup
+        
           chrome.runtime.sendMessage(msg);
         }
         return true;
@@ -33,7 +33,7 @@ class BackgroundManager {
         });
       });
   
-      // Add tab change detection
+    
       chrome.tabs.onActivated.addListener(async (activeInfo) => {
         try {
           const tab = await chrome.tabs.get(activeInfo.tabId);
@@ -43,20 +43,20 @@ class BackgroundManager {
         }
       });
   
-      // Add URL change detection within the same tab
+
       chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (changeInfo.url) {
           this.handleTabChange(tab);
         }
       });
   
-      // Add notification handler
+      
       chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         if (message.type === 'SHOW_NOTIFICATION') {
           chrome.action.setBadgeText({ text: '✓' });
           chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
           
-          // Clear badge after 2 seconds
+          //waiits for 2 sec
           setTimeout(() => {
             chrome.action.setBadgeText({ text: '' });
           }, 2000);
@@ -99,7 +99,7 @@ class BackgroundManager {
       this.lastUrl = tab.url;
       console.log('Tab/URL changed to:', tab.url);
   
-      // Check if it's an LLM page
+
       const supportedDomains = [
         'chat.openai.com',
         'chatgpt.com',
@@ -119,7 +119,7 @@ class BackgroundManager {
       const isLLMPage = supportedDomains.some(domain => tab.url.includes(domain));
       
       if (isLLMPage) {
-        // Notify content script to handle context
+     
         chrome.tabs.sendMessage(tab.id, {
           type: 'TAB_CHANGED',
           data: { url: tab.url }
