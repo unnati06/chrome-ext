@@ -1,6 +1,7 @@
 class BackgroundManager {
     constructor() {
       this.serverUrl = 'http://localhost:5000';
+      this.lastUrl = '';
       this.init();
     }
   
@@ -31,6 +32,37 @@ class BackgroundManager {
           configVersion: 1.0
         });
       });
+  
+      // Add tab change detection
+      chrome.tabs.onActivated.addListener(async (activeInfo) => {
+        try {
+          const tab = await chrome.tabs.get(activeInfo.tabId);
+          this.handleTabChange(tab);
+        } catch (error) {
+          console.error('Tab change error:', error);
+        }
+      });
+  
+      // Add URL change detection within the same tab
+      chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        if (changeInfo.url) {
+          this.handleTabChange(tab);
+        }
+      });
+  
+      // Add notification handler
+      chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.type === 'SHOW_NOTIFICATION') {
+          chrome.action.setBadgeText({ text: '✓' });
+          chrome.action.setBadgeBackgroundColor({ color: '#00FF00' });
+          
+          // Clear badge after 2 seconds
+          setTimeout(() => {
+            chrome.action.setBadgeText({ text: '' });
+          }, 2000);
+        }
+        return true;
+      });
     }
   
     async handleContextUpdate(data) {
@@ -60,9 +92,33 @@ class BackgroundManager {
         throw new Error(`Server error: ${response.status}`);
       }
     }
-}
   
-// Initialize singleton
-// if (!window.backgroundManager) {
-//   window.backgroundManager = new BackgroundManager();
-// }
+    async handleTabChange(tab) {
+      if (!tab.url || tab.url === this.lastUrl) return;
+      
+      this.lastUrl = tab.url;
+      console.log('Tab/URL changed to:', tab.url);
+  
+      // Check if it's an LLM page
+      const supportedDomains = [
+        'chat.openai.com',
+        'claude.ai',
+        'gemini.google.com',
+        'x.com',
+        'chat.deepseek.com',
+        'deepseek.com',
+        'kimi.ai',
+        'aliyun.com'
+      ];
+  
+      const isLLMPage = supportedDomains.some(domain => tab.url.includes(domain));
+      
+      if (isLLMPage) {
+        // Notify content script to handle context
+        chrome.tabs.sendMessage(tab.id, {
+          type: 'TAB_CHANGED',
+          data: { url: tab.url }
+        });
+      }
+    }
+}

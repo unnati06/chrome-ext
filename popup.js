@@ -3,14 +3,17 @@ class PopupManager {
     console.log('PopupManager constructor called');
     this.currentLLM = '';
     this.currentContext = '';
+    this.autoSwitchEnabled = true; // Default enabled
+    this.lastCopiedTime = null;
     this.init();
   }
 
   async init() {
     console.log('PopupManager initializing...');
-    await this.getCurrentState();
     this.setupEventListeners();
-    this.setupMessageListener();
+    await this.getCurrentState();
+    // Automatically copy context when popup opens
+    this.autoCopyContext();
   }
 
   async getCurrentState() {
@@ -79,9 +82,33 @@ class PopupManager {
     }
   }
 
+  async autoCopyContext() {
+    if (this.currentContext && this.autoSwitchEnabled) {
+      try {
+        await navigator.clipboard.writeText(this.currentContext);
+        this.lastCopiedTime = new Date();
+        this.showCopyStatus('Context automatically copied to clipboard');
+        this.updateUI();
+      } catch (error) {
+        console.error('Auto copy failed:', error);
+        this.showCopyStatus('Failed to copy automatically');
+      }
+    }
+  }
+
   setupEventListeners() {
     console.log('Setting up event listeners');
-    // Add copy button handler
+    
+    // Listen for context updates from background script
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      if (message.type === 'SHOW_NOTIFICATION') {
+        this.showCopyStatus(message.message);
+      } else if (message.type === 'CONTEXT_UPDATE') {
+        this.handleContextUpdate(message.data);
+      }
+    });
+
+    // Manual copy button handler
     const copyBtn = document.getElementById('copyBtn');
     if (copyBtn) {
       copyBtn.addEventListener('click', async () => {
@@ -90,18 +117,18 @@ class PopupManager {
             console.log('No context to copy');
             return;
           }
-          
           await navigator.clipboard.writeText(this.currentContext);
-          console.log('Context copied to clipboard');
-          
-          // Visual feedback
+          this.lastCopiedTime = new Date();
           copyBtn.textContent = 'Copied!';
+          this.showCopyStatus('Context manually copied to clipboard');
+          this.updateUI();
           setTimeout(() => {
             copyBtn.textContent = 'Copy Context';
           }, 2000);
         } catch (error) {
-          console.error('Failed to copy:', error);
+          console.error('Copy failed:', error);
           copyBtn.textContent = 'Copy Failed';
+          this.showCopyStatus('Failed to copy');
           setTimeout(() => {
             copyBtn.textContent = 'Copy Context';
           }, 2000);
@@ -109,30 +136,31 @@ class PopupManager {
       });
     }
 
-    // Add paste button handler if needed
+    // Auto-switch toggle
+    const autoSwitchToggle = document.getElementById('autoSwitchToggle');
+    if (autoSwitchToggle) {
+      autoSwitchToggle.checked = this.autoSwitchEnabled;
+      autoSwitchToggle.addEventListener('change', () => {
+        this.autoSwitchEnabled = autoSwitchToggle.checked;
+        if (this.autoSwitchEnabled) {
+          this.autoCopyContext(); // Auto copy when enabling
+        }
+        this.updateUI();
+      });
+    }
+
+    // Paste button (for manual injection)
     const pasteBtn = document.getElementById('pasteBtn');
     if (pasteBtn) {
-      pasteBtn.addEventListener('click', async () => {
-        try {
-          const text = await navigator.clipboard.readText();
-          this.currentContext = text;
-          this.updateUI();
-          console.log('Context pasted from clipboard');
-        } catch (error) {
-          console.error('Failed to paste:', error);
-        }
+      pasteBtn.addEventListener('click', () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          chrome.tabs.sendMessage(tabs[0].id, {
+            type: 'INJECT_CONTEXT',
+            context: this.currentContext
+          });
+        });
       });
     }
-  }
-
-  setupMessageListener() {
-    console.log('Setting up popup message listener');
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      console.log('Popup received message:', message);
-      if (message.type === 'CONTEXT_UPDATE') {
-        this.handleContextUpdate(message.data);
-      }
-    });
   }
 
   handleContextUpdate(data) {
@@ -140,7 +168,20 @@ class PopupManager {
     if (data && data.llmType) {
       this.currentLLM = data.llmType;
       this.currentContext = data.content || '';
+      // Auto copy when context updates
+      this.autoCopyContext();
       this.updateUI();
+    }
+  }
+
+  showCopyStatus(message) {
+    const statusElement = document.getElementById('copyStatus');
+    if (statusElement) {
+      statusElement.textContent = message;
+      statusElement.classList.remove('status-active');
+      // Trigger reflow
+      void statusElement.offsetWidth;
+      statusElement.classList.add('status-active');
     }
   }
 
@@ -156,6 +197,21 @@ class PopupManager {
       contextElement.innerHTML = `<pre>${this.currentContext}</pre>`;
     } else {
       contextElement.innerHTML = '<div class="no-context">No context available</div>';
+    }
+
+    // Update auto-switch status
+    const statusElement = document.getElementById('switchStatus');
+    if (statusElement) {
+      statusElement.textContent = this.autoSwitchEnabled ? 
+        'Auto-switching enabled (context will be auto-copied)' : 
+        'Auto-switching disabled';
+      statusElement.className = this.autoSwitchEnabled ? 'status-enabled' : 'status-disabled';
+    }
+
+    // Show last copied time if available
+    const timeElement = document.getElementById('lastCopiedTime');
+    if (timeElement && this.lastCopiedTime) {
+      timeElement.textContent = `Last copied: ${this.lastCopiedTime.toLocaleTimeString()}`;
     }
   }
 }
