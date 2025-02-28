@@ -1,0 +1,62 @@
+{
+    "inputs": [
+      {
+        "platform": "chatgpt",
+        "selector": "textarea[data-testid='message-input']"
+      },
+      {
+        "platform": "claude",
+        "selector": "div[role='textbox']"
+      },
+      {
+        "platform": "gemini",
+        "selector": "textarea[aria-label~='Chat input']"
+      },
+      {
+        "platform": "grok",
+        "selector": "textarea[placeholder*='Type your message']"
+      },
+      {
+        "platform": "kimi",
+        "selector": "textarea.chat-input"
+      },
+      {
+        "platform": "qwen",
+        "selector": "textarea.prompt-textarea"
+      },
+      {
+        "platform": "deepseek",
+        "selector": "textarea.prompt-textarea"
+      }
+    ],
+    "outputs": [
+      {
+        "platform": "chatgpt",
+        "selector": "div[data-testid^='conversation-turn']"
+      },
+      {
+        "platform": "claude",
+        "selector": "div.claude-message"
+      },
+      {
+        "platform": "gemini",
+        "selector": "div.model-response"
+      },
+      {
+        "platform": "grok",
+        "selector": "div.message-content"
+      },
+      {
+        "platform": "kimi",
+        "selector": "div.message-bubble"
+      },
+      {
+        "platform": "qwen",
+        "selector": "div.response-message"
+      },
+      {
+        "platform": "deepseek",
+        "selector": "div.ai-message"
+      }
+    ]
+  }

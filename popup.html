@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LLM Context Manager</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 15px;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+    }
+
+    .platform-badge {
+      background-color: #333;
+      padding: 5px 10px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      display: inline-block;
+      border: 1px solid #444;
+    }
+
+    .context-container {
+      background-color: #111;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 10px 0;
+      max-height: 200px;
+      overflow-y: auto;
+      word-wrap: break-word;
+    }
+
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .copy-btn {
+      background-color: #00ff00;
+      color: #000000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px #00ff00;
+      transition: all 0.3s ease;
+    }
+
+    .copy-btn:hover {
+      box-shadow: 0 0 20px #00ff00;
+      transform: scale(1.05);
+    }
+
+    .paste-btn {
+      background-color: #00ffff;
+      color: #000000;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px #00ffff;
+      transition: all 0.3s ease;
+      display: none; /* Hidden by default */
+    }
+
+    .paste-btn:hover {
+      box-shadow: 0 0 20px #00ffff;
+      transform: scale(1.05);
+    }
+
+    .paste-btn.visible {
+      display: block;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #111;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #333;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #444;
+    }
+
+    .no-context {
+      color: #666;
+      text-align: center;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="platform" class="platform-badge">
+    Current LLM: <span id="llm-name">Loading...</span>
+  </div>
+  
+  <div class="context-container" id="context">
+    <div class="no-context">No context available</div>
+  </div>
+  
+  <div class="button-container">
+    <button id="copyBtn" class="copy-btn">Copy Context</button>
+    <button id="pasteBtn" class="paste-btn">Paste Context</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,60 @@
+{
+    "manifest_version": 3,
+    "name": "LLM Context Manager",
+    "version": "1.0",
+    "description": "Capture and transfer context between different LLM chat interfaces",
+    "permissions": [
+      "activeTab",
+      "storage",
+      "tabs"
+    ],
+    "host_permissions": [
+      "*://*.openai.com/*",
+      "*://*.anthropic.com/*",
+      "*://*.chatgpt.com/*",
+      "*://*.google.com/*",
+      "*://*.x.ai/*",
+      "*://*.deepseek.com/*",
+      "*://*.kimi.ai/*",
+      "*://*.aliyun.com/*",
+      "*://*.chat.deepseek.com/*",
+      "*://*.alibaba.com/*"
+    ],
+    "content_scripts": [
+      {
+        "matches": [
+          "*://*.openai.com/*",
+          "*://*.anthropic.com/*",
+          "*://*.chatgpt.com/*",
+          "*://*.google.com/products/bard*",
+          "*://*.x.ai/*",
+          "*://*.deepseek.com/*",
+          "*://*.kimi.ai/*",
+          "*://*.aliyun.com/*",
+          "*://*.alibaba.com/*"
+        ],
+        "js": ["content.js"]
+      }
+    ],
+    "background": {
+      "service_worker": "background.js",
+      "type": "module"
+    },
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": {
+        "16": "icon16.png",
+        "48": "icon48.png",
+        "128": "icon128.png"
+      }
+    },
+    "icons": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    },
+    "web_accessible_resources": [{
+      "resources": ["selector.json"],
+      "matches": ["<all_urls>"]
+    }]
+  }
