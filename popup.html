@@ -191,6 +191,46 @@
       text-align: right;
       margin-top: 5px;
     }
+
+    .summarization-container {
+      margin: 10px 0;
+      padding: 8px;
+      background: #222;
+      border-radius: 4px;
+    }
+
+    .summary-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .summary-status {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    .summary-active {
+      color: #00ff00;
+    }
+
+    .summary-length {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .summary-length input {
+      width: 60px;
+      background: #333;
+      border: 1px solid #444;
+      color: #fff;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
   </style>
 </head>
 <body>
@@ -209,13 +249,29 @@
   
   <div id="copyStatus" class="copy-status"></div>
   
+  <!-- New Summarization Controls -->
+  <div class="summarization-container">
+    <div class="summary-toggle">
+      <span>Smart Summarization</span>
+      <label class="switch">
+        <input type="checkbox" id="summaryToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div id="summaryStatus" class="summary-status">Initializing summarizer...</div>
+    <div class="summary-length">
+      <span>Min Length:</span>
+      <input type="number" id="minLength" value="1000" min="100" step="100">
+    </div>
+  </div>
+  
   <div class="context-container" id="context">
     <div class="no-context">No context available</div>
   </div>
   
   <div class="button-container">
     <button id="copyBtn" class="copy-btn">Copy Context</button>
-    <button id="pasteBtn" class="paste-btn">Inject Context</button>
+    <button id="pasteBtn" class="paste-btn">Paste Context</button>
   </div>
 
   <div id="lastCopiedTime" class="time-status"></div>

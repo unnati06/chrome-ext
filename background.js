@@ -102,13 +102,18 @@ class BackgroundManager {
       // Check if it's an LLM page
       const supportedDomains = [
         'chat.openai.com',
+        'chatgpt.com',
         'claude.ai',
-        'gemini.google.com',
+        'anthropic.com',
+        'claude.google.com',
+        'gemini.google.com/app',
         'x.com',
+        'x.grok.ai',
         'chat.deepseek.com',
         'deepseek.com',
         'kimi.ai',
-        'aliyun.com'
+        'aliyun.com',
+        'alibaba.com'
       ];
   
       const isLLMPage = supportedDomains.some(domain => tab.url.includes(domain));

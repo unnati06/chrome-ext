@@ -11,13 +11,15 @@
     "host_permissions": [
       "*://*.openai.com/*",
       "*://*.anthropic.com/*",
+      "*://*.claude.google.com/*",
       "*://*.chatgpt.com/*",
-      "*://*.google.com/*",
-      "*://*.x.ai/*",
+      "*://*.gemini.google.com/app/*",
+      "*://*.x.com/*",
+      "*://*.x.grok.ai/*",
+      "*://*.chat.deepseek.com/*",
       "*://*.deepseek.com/*",
       "*://*.kimi.ai/*",
       "*://*.aliyun.com/*",
-      "*://*.chat.deepseek.com/*",
       "*://*.alibaba.com/*"
     ],
     "content_scripts": [
@@ -25,15 +27,19 @@
         "matches": [
           "*://*.openai.com/*",
           "*://*.anthropic.com/*",
+          "*://*.claude.google.com/*",
           "*://*.chatgpt.com/*",
-          "*://*.google.com/products/bard*",
-          "*://*.x.ai/*",
+          "*://*.gemini.google.com/app/*",
+          "*://*.x.com/*",
+          "*://*.x.grok.ai/*",
+          "*://*.chat.deepseek.com/*",
           "*://*.deepseek.com/*",
           "*://*.kimi.ai/*",
           "*://*.aliyun.com/*",
           "*://*.alibaba.com/*"
         ],
-        "js": ["content.js"]
+        "js": ["summarizer.js", "content.js"],
+        "type": "module"
       }
     ],
     "background": {
@@ -54,7 +60,14 @@
       "128": "icon128.png"
     },
     "web_accessible_resources": [{
-      "resources": ["selector.json"],
+      "resources": [
+        "summarizer.js",
+        "content.js",
+        "selector.json"
+    ],
       "matches": ["<all_urls>"]
-    }]
+    }],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval' https://cdn.jsdelivr.net; object-src 'self'"
+    }
   }

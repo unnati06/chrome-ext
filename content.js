@@ -1,3 +1,5 @@
+import Summarizer from './summarizer.js';
+
 class LLMMonitor {
     constructor() {
         console.log('LLMMonitor constructor called');
@@ -7,6 +9,8 @@ class LLMMonitor {
         };
         this.initialized = false;
         this.lastContext = '';
+        console.log('LLMMonitor: Creating summarizer instance');
+        this.summarizer = new Summarizer();
         this.setupAutoContextSwitching();
         this.init();
     }
@@ -162,12 +166,12 @@ class LLMMonitor {
     detectLLM() {
         const hostPatterns = {
             'chatgpt': /chat\.openai\.com|chatgpt\.com/,
-            'claude': /claude\.ai|anthropic\.com/,
-            'gemini': /gemini\.google\.com/,
-            'grok': /x\.(ai|com)/,
+            'claude': /claude\.ai|anthropic\.com|claude\.google\.com/,
+            'gemini': /gemini\.google\.com\/app/,
+            'grok': /x\.com|x\.grok\.ai/,
+            'deepseek': /chat\.deepseek\.com|deepseek\.com/,
             'kimi': /kimi\.ai/,
-            'qwen': /aliyun\.com|alibaba\.com/,
-            'deepseek': /deepseek\.com|chat\.deepseek\.com/
+            'qwen': /aliyun\.com|alibaba\.com/
         };
         
         const match = Object.entries(hostPatterns).find(([_, pattern]) => 
@@ -208,55 +212,24 @@ class LLMMonitor {
         }
     }
 
-    getCurrentContext() {
+    async getCurrentContext() {
         try {
-            const llmType = this.detectLLM();
-            console.log('Getting context for LLM type:', llmType);
+            console.log('Getting current context...');
+            const rawContext = this.getRawContext();
+            console.log('Raw context length:', rawContext?.length);
             
-            const selector = this.config.outputSelectors.find(s => s.platform === llmType);
-            console.log('Using selector:', selector);
-            
-            if (selector) {
-                const elements = document.querySelectorAll(selector.selector);
-                console.log(`Found ${elements.length} elements`);
-                
-                if (elements.length === 0) {
-                    console.log('No message elements found');
-                    return '';
-                }
-
-                // Convert elements to array and sort by priority
-                const messages = Array.from(elements)
-                    .map(el => ({
-                        element: el,
-                        priority: this.getElementPriority(el),
-                        text: el.textContent.trim()
-                    }))
-                    .filter(item => item.text.length > 0 && item.priority > 0)
-                    .sort((a, b) => b.priority - a.priority)
-                    .map(item => {
-                        let role = 'Assistant';
-                        if (
-                            item.element.getAttribute('data-message-author-role') === 'user' ||
-                            item.element.classList.contains('user-message') ||
-                            item.element.closest('.chat-message.user')
-                        ) {
-                            role = 'User';
-                        }
-                        return `${role}: ${item.text}`;
-                    });
-
-                console.log('Found messages:', messages.length);
-                if (messages.length > 0) {
-                    console.log('First message preview:', messages[0].slice(0, 100));
-                }
-                return messages.join('\n\n');
+            if (this.summarizer) {
+                console.log('Summarizer exists, attempting summarization');
+                const summarizedContext = await this.summarizer.summarize(rawContext);
+                console.log('Summarization complete:', 
+                    summarizedContext?.substring(0, 100) + '...');
+                return summarizedContext;
+            } else {
+                console.log('No summarizer available');
+                return rawContext;
             }
-            
-            console.log('No selector found for LLM type:', llmType);
-            return '';
         } catch (error) {
-            console.error('Error getting current context:', error);
+            console.error('Detailed context error:', error);
             return '';
         }
     }

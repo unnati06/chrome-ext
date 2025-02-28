@@ -6,15 +6,15 @@
       },
       {
         "platform": "claude",
-        "selector": "div[role='textbox']"
+        "selector": "div[role='textbox'], textarea[placeholder*='Message Claude']"
       },
       {
         "platform": "gemini",
-        "selector": "textarea[aria-label~='Chat input']"
+        "selector": "div[contenteditable='true'], textarea[placeholder*='Enter a prompt']"
       },
       {
         "platform": "grok",
-        "selector": "textarea[placeholder*='Type your message']"
+        "selector": "div.DraftEditor-root textarea, textarea[placeholder*='Message']"
       },
       {
         "platform": "kimi",
@@ -26,25 +26,25 @@
       },
       {
         "platform": "deepseek",
-        "selector": "textarea.prompt-textarea"
+        "selector": "textarea.prompt-textarea, div[contenteditable='true']"
       }
     ],
     "outputs": [
       {
         "platform": "chatgpt",
-        "selector": "div[data-testid^='conversation-turn']"
+        "selector": "div[data-message-author-role='assistant'], div[data-message-author-role='user']"
       },
       {
         "platform": "claude",
-        "selector": "div.claude-message"
+        "selector": "div.prose, div.user-message, div.claude-message, div[data-message-type]"
       },
       {
         "platform": "gemini",
-        "selector": "div.model-response"
+        "selector": "div.response-container div.markdown-content, div.query-container div.markdown-content"
       },
       {
         "platform": "grok",
-        "selector": "div.message-content"
+        "selector": "div.message-content div.content, div.message-bubble div.content"
       },
       {
         "platform": "kimi",
@@ -56,7 +56,7 @@
       },
       {
         "platform": "deepseek",
-        "selector": "div.ai-message"
+        "selector": "div.message-content div.message-text, div.message-content div.user-message, div.chat-message div.content"
       }
     ]
   }

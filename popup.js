@@ -3,82 +3,54 @@ class PopupManager {
     console.log('PopupManager constructor called');
     this.currentLLM = '';
     this.currentContext = '';
-    this.autoSwitchEnabled = true; // Default enabled
+    this.autoSwitchEnabled = true;
+    this.summaryEnabled = true;
+    this.minLength = 1000;
     this.lastCopiedTime = null;
     this.init();
   }
 
   async init() {
     console.log('PopupManager initializing...');
+    await this.loadSettings();
     this.setupEventListeners();
     await this.getCurrentState();
     // Automatically copy context when popup opens
     this.autoCopyContext();
   }
 
+  async loadSettings() {
+    const settings = await chrome.storage.local.get([
+      'summaryEnabled',
+      'minLength'
+    ]);
+    this.summaryEnabled = settings.summaryEnabled ?? true;
+    this.minLength = settings.minLength ?? 1000;
+  }
+
   async getCurrentState() {
     try {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-      console.log('Current tab:', tab);
-
-      // Check if we're on a supported LLM page
-      const supportedDomains = [
-        'chat.openai.com',
-        'claude.ai',
-        'bard.google.com',
-        'x.ai',
-        'deepseek.com',
-        'kimi.ai',
-        'aliyun.com',
-        'chatgpt.com'
-      ];
-
-      const isSupported = supportedDomains.some(domain => tab.url.includes(domain));
+      console.log('Current summarization settings:', {
+        enabled: this.summaryEnabled,
+        minLength: this.minLength
+      });
       
-      if (!isSupported) {
-        console.log('Not on a supported LLM page');
-        this.currentLLM = 'Not on LLM page';
+      chrome.tabs.sendMessage(tab.id, { 
+        type: 'GET_CURRENT_STATE',
+        settings: {
+          summaryEnabled: this.summaryEnabled,
+          minLength: this.minLength
+        }
+      }, response => {
+        console.log('Got response from content script:', response);
+        if (response) {
+          this.handleContextUpdate(response);
+        }
         this.updateUI();
-        return;
-      }
-
-      // Check if content script is ready by sending a ping
-      try {
-        await new Promise((resolve, reject) => {
-          chrome.tabs.sendMessage(tab.id, { type: 'PING' }, response => {
-            if (chrome.runtime.lastError) {
-              reject(chrome.runtime.lastError);
-            } else if (response && response.pong) {
-              resolve();
-            }
-          });
-        });
-
-        // Now that we know the content script is ready, request the state
-        chrome.tabs.sendMessage(tab.id, { 
-          type: 'GET_CURRENT_STATE',
-          from: 'popup'
-        }, response => {
-          if (chrome.runtime.lastError) {
-            console.log('State request error:', chrome.runtime.lastError);
-            this.currentLLM = 'Error getting LLM state';
-          } else if (response) {
-            console.log('Received state:', response);
-            this.handleContextUpdate(response);
-          }
-          this.updateUI();
-        });
-
-      } catch (error) {
-        console.log('Content script not ready:', error);
-        this.currentLLM = 'Waiting for page load...';
-        this.updateUI();
-      }
-
+      });
     } catch (error) {
-      console.error('Error in getCurrentState:', error);
-      this.currentLLM = 'Error detecting LLM';
-      this.updateUI();
+      console.error('Error getting state:', error);
     }
   }
 
@@ -161,6 +133,29 @@ class PopupManager {
         });
       });
     }
+
+    // Summary toggle
+    const summaryToggle = document.getElementById('summaryToggle');
+    if (summaryToggle) {
+      summaryToggle.checked = this.summaryEnabled;
+      summaryToggle.addEventListener('change', () => {
+        this.summaryEnabled = summaryToggle.checked;
+        chrome.storage.local.set({ summaryEnabled: this.summaryEnabled });
+        this.updateSummaryStatus();
+        this.getCurrentState(); // Refresh context with new setting
+      });
+    }
+
+    // Min length input
+    const minLengthInput = document.getElementById('minLength');
+    if (minLengthInput) {
+      minLengthInput.value = this.minLength;
+      minLengthInput.addEventListener('change', () => {
+        this.minLength = parseInt(minLengthInput.value);
+        chrome.storage.local.set({ minLength: this.minLength });
+        this.getCurrentState(); // Refresh context with new setting
+      });
+    }
   }
 
   handleContextUpdate(data) {
@@ -182,6 +177,19 @@ class PopupManager {
       // Trigger reflow
       void statusElement.offsetWidth;
       statusElement.classList.add('status-active');
+    }
+  }
+
+  updateSummaryStatus() {
+    const statusElement = document.getElementById('summaryStatus');
+    if (statusElement) {
+      if (this.summaryEnabled) {
+        statusElement.textContent = 'Summarization active';
+        statusElement.classList.add('summary-active');
+      } else {
+        statusElement.textContent = 'Summarization disabled';
+        statusElement.classList.remove('summary-active');
+      }
     }
   }
 
@@ -213,6 +221,8 @@ class PopupManager {
     if (timeElement && this.lastCopiedTime) {
       timeElement.textContent = `Last copied: ${this.lastCopiedTime.toLocaleTimeString()}`;
     }
+
+    this.updateSummaryStatus();
   }
 }
 
