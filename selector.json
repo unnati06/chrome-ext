@@ -1,62 +1,20 @@
 {
-    "inputs": [
-      {
-        "platform": "chatgpt",
-        "selector": "textarea[data-testid='message-input']"
-      },
-      {
-        "platform": "claude",
-        "selector": "div[role='textbox']"
-      },
-      {
-        "platform": "gemini",
-        "selector": "div[contenteditable='true'], textarea[placeholder*='Enter a prompt']"
-      },
-      {
-        "platform": "grok",
-        "selector": "div.DraftEditor-root textarea, textarea[placeholder*='Message']"
-      },
-      {
-        "platform": "kimi",
-        "selector": "textarea.chat-input"
-      },
-      {
-        "platform": "qwen",
-        "selector": "textarea.prompt-textarea"
-      },
-      {
-        "platform": "deepseek",
-        "selector": "textarea#chat-input, textarea.prompt-textarea"
-      }
-    ],
-    "outputs": [
-      {
-        "platform": "chatgpt",
-        "selector": "div[data-message-author-role='assistant'], div[data-message-author-role='user']"
-      },
-      {
-        "platform": "claude",
-        "selector": "div.prose, div.user-message, div.claude-message, div[data-message-type]"
-      },
-      {
-        "platform": "gemini",
-        "selector": "div.response-container div.markdown-content, div.query-container div.markdown-content"
-      },
-      {
-        "platform": "grok",
-        "selector": "div.message-content div.content, div.message-bubble div.content"
-      },
-      {
-        "platform": "kimi",
-        "selector": "div.message-bubble"
-      },
-      {
-        "platform": "qwen",
-        "selector": "div.response-message"
-      },
-      {
-        "platform": "deepseek",
-        "selector": ".message-content .message-text, .chat-message .content, .message-bubble .content, .chat-message-item"
-      }
-    ]
-  }
+  "inputs": [
+    {"platform": "chatgpt", "selector": "textarea#prompt-textarea"},
+    {"platform": "claude", "selector": "div[contenteditable='true'][data-placeholder]"},
+    {"platform": "gemini", "selector": "textarea[class*='prompt-input']"},
+    {"platform": "grok", "selector": "textarea[placeholder*='Ask Grok']"},
+    {"platform": "kimi", "selector": "textarea#chat-input"},
+    {"platform": "qwen", "selector": "textarea[class*='prompt-textarea']"},
+    {"platform": "deepseek", "selector": "textarea#prompt-textarea"}
+  ],
+  "outputs": [
+    {"platform": "chatgpt", "selector": "div[class*='markdown prose']"},
+    {"platform": "claude", "selector": "div[class*='message-content']"},
+    {"platform": "gemini", "selector": "div[class*='response-text']"},
+    {"platform": "grok", "selector": "div[class*='message-text']"},
+    {"platform": "kimi", "selector": "div[class*='message-item']"},
+    {"platform": "qwen", "selector": "div[class*='response-content']"},
+    {"platform": "deepseek", "selector": "div[class*='message-item']"}
+  ]
+}
