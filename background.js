@@ -99,22 +99,16 @@ class BackgroundManager {
       this.lastUrl = tab.url;
       console.log('Tab/URL changed to:', tab.url);
   
-
-      const supportedDomains = [
-        'chat.openai.com',
-        'chatgpt.com',
-        'claude.ai',
-        'anthropic.com',
-        'claude.google.com',
-        'gemini.google.com/app',
-        'x.com',
-        'x.grok.ai',
-        'chat.deepseek.com',
-        'deepseek.com',
-        'kimi.ai',
-        'aliyun.com',
-        'alibaba.com'
-      ];
+  const supportedDomains = [
+    'chat.openai.com',
+    'chatgpt.com',
+    'claude.anthropic.com',
+    'gemini.google.com',
+    'x.ai',
+    'chat.deepseek.com',
+    'kimi.moonshot.cn',
+    'dashscope.aliyun.com'
+  ];
   
       const isLLMPage = supportedDomains.some(domain => tab.url.includes(domain));
       
