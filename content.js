@@ -159,12 +159,12 @@ class LLMMonitor {
     detectLLM() {
         const hostPatterns = {
             'chatgpt': /chat\.openai\.com|chatgpt\.com/,
-            'claude': /claude\.ai|anthropic\.com|claude\.google\.com/,
-            'gemini': /gemini\.google\.com\/app/,
-            'grok': /x\.com|x\.grok\.ai/,
-            'deepseek': /chat\.deepseek\.com|deepseek\.com/,
-            'kimi': /kimi\.ai/,
-            'qwen': /aliyun\.com|alibaba\.com/
+            'claude': /claude\.anthropic\.com/,
+    'gemini': /gemini\.google\.com/,
+    'grok': /x\.ai/,
+    'deepseek': /chat\.deepseek\.com/,
+    'kimi': /kimi\.moonshot\.cn/,
+    'qwen': /dashscope\.aliyun\.com/
         };
         
         const match = Object.entries(hostPatterns).find(([_, pattern]) => 
